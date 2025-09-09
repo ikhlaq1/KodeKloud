@@ -15,6 +15,11 @@ import {
   setLoading,
   setLoadingMore,
 } from '../../../store/courseSlice';
+import { CourseRepository } from '../../../data/repositories/CourseRepository';
+import { CourseUseCases } from '../../../domain/usecases/CourseUseCases';
+
+const courseRepository = new CourseRepository();
+const courseUseCases = new CourseUseCases(courseRepository);
 
 const CourseListScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,7 +35,7 @@ const CourseListScreen = () => {
   const fetchCourses = async () => {
     try {
       dispatch(setLoading(true));
-      const response = await ApiClient.getCourses(1);
+      const response = await courseUseCases.getCourses(1);
 
       dispatch(setCourses(response.courses));
       dispatch(setCurrentPage(1));
@@ -47,10 +52,10 @@ const CourseListScreen = () => {
     setLoadingMore(true);
     try {
       const nextPage = currentPage + 1;
-      const response = await ApiClient.getCourses(nextPage);
-      dispatch(appendCourses(response.courses));
+      const response = await courseUseCases.loadMoreCourses(nextPage, courses);
+      dispatch(appendCourses(response.allCourses.slice(courses.length)));
       dispatch(setCurrentPage(nextPage));
-      dispatch(setHasMore(response.metadata.next_page !== null));
+      dispatch(setHasMore(response.hasMore));
     } catch (err) {
       console.error('Failed to load more:', err);
       dispatch(setLoadingMore(false));
