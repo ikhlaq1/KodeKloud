@@ -4,14 +4,24 @@ import ApiClient from '../../../data/ApiClient';
 import { Course } from '../../../domain/Course';
 import CourseCard from '../../components/CourseCard';
 import { styles } from './styles';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../store/store';
+import {
+  appendCourses,
+  setCourses,
+  setCurrentPage,
+  setError,
+  setHasMore,
+  setLoading,
+  setLoadingMore,
+} from '../../../store/courseSlice';
 
 const CourseListScreen = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+  //replaced all state variables with values in store
+  const { courses, currentPage, hasMore, loading, loadingMore, error } = useSelector(
+    (state: RootState) => state.courses,
+  );
 
   useEffect(() => {
     fetchCourses();
@@ -19,18 +29,15 @@ const CourseListScreen = () => {
 
   const fetchCourses = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      dispatch(setLoading(true));
       const response = await ApiClient.getCourses(1);
-      setCourses(response.courses);
-      setCurrentPage(1);
-      //checking for if more pages can be requested after API call
-      setHasMore(response.metadata.next_page !== null);
+
+      dispatch(setCourses(response.courses));
+      dispatch(setCurrentPage(1));
+      dispatch(setHasMore(response.metadata.next_page !== null));
     } catch (err) {
-      setError('Failed to load courses');
+      dispatch(setError('Failed to load courses'));
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -41,11 +48,12 @@ const CourseListScreen = () => {
     try {
       const nextPage = currentPage + 1;
       const response = await ApiClient.getCourses(nextPage);
-      setCourses([...courses, ...response.courses]);
-      setCurrentPage(nextPage);
-      setHasMore(response.metadata.next_page !== null);
+      dispatch(appendCourses(response.courses));
+      dispatch(setCurrentPage(nextPage));
+      dispatch(setHasMore(response.metadata.next_page !== null));
     } catch (err) {
       console.error('Failed to load more:', err);
+      dispatch(setLoadingMore(false));
     }
     setLoadingMore(false);
   };
@@ -88,8 +96,8 @@ const CourseListScreen = () => {
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        onEndReached={loadMore} // Auto load when reaching end
-        onEndReachedThreshold={0.5} // Load when 50% from bottom
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
         ListFooterComponent={() =>
           loadingMore ? (
             <View style={styles.loader}>
