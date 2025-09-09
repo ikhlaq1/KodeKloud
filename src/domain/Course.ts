@@ -19,5 +19,6 @@ export interface CourseListResponse {
     page: number;
     total_count: number;
     limit: number;
+    next_page: number | null;
   };
 }

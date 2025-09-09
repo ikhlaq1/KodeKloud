@@ -25,4 +25,8 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 32,
   },
+  loader: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
 });
