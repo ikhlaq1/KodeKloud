@@ -1,48 +1,66 @@
-// src/presentation/CourseListScreen.tsx
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, ActivityIndicator, StyleSheet, Image } from 'react-native';
+import { View, FlatList, ActivityIndicator, Text } from 'react-native';
 import ApiClient from '../../../data/ApiClient';
 import { Course } from '../../../domain/Course';
+import CourseCard from '../../components/CourseCard';
 import { styles } from './styles';
 
 const CourseListScreen = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch courses when screen loads
-    ApiClient.getCourses(1)
-      .then(response => {
-        setCourses(response.courses);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error(error);
-        setLoading(false);
-      });
+    fetchCourses();
   }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await ApiClient.getCourses(1);
+      setCourses(response.courses);
+    } catch (err) {
+      setError('Failed to load courses');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCoursePress = (course: Course) => {
+    console.log('Course pressed:', course.slug);
+  };
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#0066CC" />
+        <Text style={styles.loadingText}>Loading courses...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
   }
 
   return (
-    <FlatList
-      data={courses}
-      keyExtractor={item => item.id}
-      renderItem={({ item }) => (
-        <View style={styles.card}>
-          <Image source={{ uri: item.thumbnail_url }} style={styles.thumbnail} />
-          <Text style={styles.title}>{item.title}</Text>
-          <Text>{item.tutors[0]?.name}</Text>
-        </View>
-      )}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={courses}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <CourseCard course={item} onPress={() => handleCoursePress(item)} />
+        )}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
   );
 };
 
