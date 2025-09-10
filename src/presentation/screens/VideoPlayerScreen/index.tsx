@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Alert, BackHandler } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Alert } from 'react-native';
 import Video, { VideoRef } from 'react-native-video';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { VideoPlayerRouteProp } from '../../../navigation/types';
 import { MMKV } from 'react-native-mmkv';
 import styles from './styles';
+import { formatTime, getCurrentPercentage } from '../../../utils/helperFunctions';
 
 const storage = new MMKV();
 const VideoPlayerScreen = () => {
@@ -23,6 +24,7 @@ const VideoPlayerScreen = () => {
     saveProgress(timeElapsed);
   };
 
+  //todo later implement back button at top left
   const handleBack = () => {
     navigation.goBack();
     return true;
@@ -30,8 +32,8 @@ const VideoPlayerScreen = () => {
 
   const saveProgress = (elapsedTime: number) => {
     storage.set(progressKey, elapsedTime);
-    const currentPercentage = (elapsedTime / duration) * 100;
-    console.log('🚀 ~ saveProgress ~ currentPercentage:', currentPercentage);
+    const currentPercentage = getCurrentPercentage(elapsedTime, duration);
+    console.log('🚀 ~ saveProgressss ~ currentPercentage:', currentPercentage);
     storage.set(completedInPercentageKey, currentPercentage);
   };
 
@@ -42,7 +44,7 @@ const VideoPlayerScreen = () => {
     const savedPosition = storage.getNumber(progressKey);
     if (savedPosition && savedPosition > 0 && videoRef.current) {
       videoRef.current.seek(savedPosition);
-      Alert.alert('Resuming', `Resuming from ${savedPosition}`);
+      Alert.alert('Resuming', `Resuming from ${formatTime(savedPosition)} seconds`);
     }
   };
 

@@ -197,6 +197,49 @@ const styles = StyleSheet.create({
   enrolledButton: {
     backgroundColor: '#4CAF50', // Green when enrolled
   },
+  progressContainer: {
+    marginTop: 8,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#4CAF50',
+    borderRadius: 2,
+  },
+  progressText: {
+    fontSize: 11,
+    color: '#666',
+    marginTop: 4,
+  },
+  progressSection: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: '#F5F7FA',
+    borderRadius: 8,
+  },
+  progressTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  completedLesson: {
+    backgroundColor: '#E8F5E9',
+    borderColor: '#4CAF50',
+  },
+  completedText: {
+    textDecorationLine: 'line-through',
+    color: '#666',
+  },
+  completedLabel: {
+    color: '#4CAF50',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
 });
 
 export default styles;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   FlatList,
   SectionList,
 } from 'react-native';
-import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import {
@@ -23,6 +23,15 @@ import { RootStackParamList, NavigationProp } from '../../../navigation/types';
 import { CourseRepository } from '../../../data/repositories/CourseRepository';
 import { CourseUseCases } from '../../../domain/usecases/CourseUseCases';
 import styles from './styles';
+import {
+  calculateCourseProgress,
+  formatTime,
+  isLessonCompleted,
+} from '../../../utils/helperFunctions';
+import VideoIcon from '../../../assets/svg/videoIcon';
+import ArticleIcon from '../../../assets/svg/articleIcon';
+import LinkIcon from '../../../assets/svg/linkIcon';
+import CompletedIcon from '../../../assets/svg/compeletedIcon';
 
 type CourseDetailRouteProp = RouteProp<RootStackParamList, 'CourseDetail'>;
 
@@ -33,17 +42,28 @@ const CourseDetailScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<CourseDetailRouteProp>();
   const { courseSlug } = route.params;
+  const [courseProgress, setCourseProgress] = useState(0);
 
   const dispatch = useDispatch<AppDispatch>();
 
   // Get data from Redux
   const courseDetails = useSelector((state: RootState) => state.courses.courseDetails[courseSlug]);
+  console.log('🚀 ~ CourseDetailScreen ~ courseDetails:', courseDetails);
   const loadingDetails = useSelector((state: RootState) => state.courses.loadingDetails);
 
   const enrolledCourses = useSelector((state: RootState) => state.courses.enrolledCourses);
   const isEnrolled = enrolledCourses.includes(courseSlug);
 
   const error = useSelector((state: RootState) => state.courses.error);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (courseDetails?.modules) {
+        const progress = calculateCourseProgress(courseSlug, courseDetails.modules);
+        setCourseProgress(progress);
+      }
+    }, [courseDetails]),
+  );
 
   useEffect(() => {
     // Only fetch if we don't have the details cached
@@ -83,24 +103,27 @@ const CourseDetailScreen = () => {
   }, [courseDetails?.modules]);
 
   //created separate render function for lesson
-  //wrapped in useCallback to avoid re-rendering
-  const renderLessonItem = useCallback(
-    ({ item: lesson }: { item: any }) => (
-      <TouchableOpacity style={styles.lessonCard} onPress={() => handleLessonPress(lesson)}>
-        <Text style={styles.lessonIcon}>{getLessonIcon(lesson.type)}</Text>
+  const renderLessonItem = ({ item: lesson }: { item: any }) => {
+    const completed = isLessonCompleted(courseSlug, lesson.id);
+
+    return (
+      <TouchableOpacity
+        style={[styles.lessonCard, completed && styles.completedLesson]}
+        onPress={() => handleLessonPress(lesson)}>
+        {/* <Text style={styles.lessonIcon}>{completed ? '✅' : getLessonIcon(lesson.type)}</Text> */}
+        <View style={styles.lessonIcon}>
+          {completed ? <CompletedIcon height={20} width={20} /> : getLessonIcon(lesson.type)}
+        </View>
         <View style={styles.lessonInfo}>
-          <Text style={styles.lessonTitle}>{lesson.title}</Text>
-          <View style={styles.lessonMeta}>
-            <Text style={styles.lessonType}>{lesson.type}</Text>
-            {lesson.duration && (
-              <Text style={styles.lessonDuration}>• {Math.ceil(lesson.duration / 60)} min</Text>
-            )}
-          </View>
+          <Text style={[styles.lessonTitle, completed && styles.completedText]}>
+            {lesson.title}
+          </Text>
+
+          {completed && <Text style={styles.completedLabel}>Completed</Text>}
         </View>
       </TouchableOpacity>
-    ),
-    [],
-  );
+    );
+  };
 
   const renderSectionHeader = ({ section }: { section: any }) => (
     <Text style={styles.moduleTitle}>{section.title}</Text>
@@ -128,29 +151,17 @@ const CourseDetailScreen = () => {
     }
   };
 
-  // Convert seconds to hours and minutes
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-  };
-
   // Get icon based on lesson type
   const getLessonIcon = (type: string) => {
     switch (type) {
       case 'video':
-        return '▶️';
-      case 'quiz':
-        return '📝';
-      case 'reading':
-        return '📖';
-      case 'assignment':
-        return '📋';
+        return <VideoIcon height={20} width={20} />;
+      case 'lab':
+        return <ArticleIcon height={20} width={20} />;
+      case 'article':
+        return <LinkIcon height={20} width={20} />;
       default:
-        return '📄';
+        return <ArticleIcon height={20} width={20} />;
     }
   };
 
@@ -206,7 +217,7 @@ const CourseDetailScreen = () => {
         <View style={styles.infoRow}>
           <Text style={styles.label}>Duration:</Text>
           <Text style={styles.value}>
-            {formatDuration(courseDetails.includes_section.course_duration)}
+            {formatTime(courseDetails.includes_section.course_duration)}s
           </Text>
         </View>
 
@@ -221,6 +232,15 @@ const CourseDetailScreen = () => {
             <Text style={styles.badgeText}>{courseDetails.difficulty_level}</Text>
           </View>
         </View>
+
+        {isEnrolled && courseProgress > 0 && (
+          <View style={styles.progressSection}>
+            <Text style={styles.progressTitle}>Course Progress: {courseProgress}%</Text>
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: `${courseProgress}%` }]} />
+            </View>
+          </View>
+        )}
 
         <TouchableOpacity
           style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
