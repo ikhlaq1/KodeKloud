@@ -33,4 +33,17 @@ export class CourseUseCases {
   async getCourseDetails(slug: string): Promise<any> {
     return await this.repository.getCourseDetails(slug);
   }
+
+  async getEnrolledCourses(): Promise<string[]> {
+    return await this.repository.getEnrolledCourses();
+  }
+
+  async enrollInCourse(courseSlug: string): Promise<void> {
+    await this.repository.saveEnrolledCourse(courseSlug);
+  }
+
+  async isEnrolled(courseSlug: string): Promise<boolean> {
+    const enrollments = await this.repository.getEnrolledCourses();
+    return enrollments.includes(courseSlug);
+  }
 }

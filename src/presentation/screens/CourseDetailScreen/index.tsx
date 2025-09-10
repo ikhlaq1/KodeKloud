@@ -13,7 +13,12 @@ import {
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { setLoadingDetails, setCourseDetails, setError } from '../../../store/courseSlice';
+import {
+  setLoadingDetails,
+  setCourseDetails,
+  setError,
+  enrollInCourse,
+} from '../../../store/courseSlice';
 import { RootStackParamList } from '../../../navigation/types';
 import { CourseRepository } from '../../../data/repositories/CourseRepository';
 import { CourseUseCases } from '../../../domain/usecases/CourseUseCases';
@@ -33,6 +38,10 @@ const CourseDetailScreen = () => {
   // Get data from Redux
   const courseDetails = useSelector((state: RootState) => state.courses.courseDetails[courseSlug]);
   const loadingDetails = useSelector((state: RootState) => state.courses.loadingDetails);
+
+  const enrolledCourses = useSelector((state: RootState) => state.courses.enrolledCourses);
+  const isEnrolled = enrolledCourses.includes(courseSlug);
+
   const error = useSelector((state: RootState) => state.courses.error);
 
   useEffect(() => {
@@ -98,8 +107,26 @@ const CourseDetailScreen = () => {
     <Text style={styles.moduleTitle}>{section.title}</Text>
   );
 
-  const handleEnroll = () => {
-    Alert.alert('Success', `You have enrolled in ${courseDetails?.plan || 'this'} course!`);
+  //function for enrolling in to a course
+  const handleEnroll = async () => {
+    if (isEnrolled) {
+      Alert.alert('Already Enrolled', 'You are already enrolled in this course');
+      return;
+    }
+
+    try {
+      // Update Redux state
+      dispatch(enrollInCourse(courseSlug));
+
+      // Persist to AsyncStorage
+      await courseUseCases.enrollInCourse(courseSlug);
+
+      // Show confirmation
+      Alert.alert('Enrolled!', `You have successfully enrolled in ${courseDetails.title}`);
+    } catch (error) {
+      console.error('Error enrolling:', error);
+      Alert.alert('Error', 'Failed to enroll in course');
+    }
   };
 
   // Convert seconds to hours and minutes
@@ -181,8 +208,11 @@ const CourseDetailScreen = () => {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.enrollButton} onPress={handleEnroll}>
-          <Text style={styles.enrollButtonText}>Enroll Now</Text>
+        <TouchableOpacity
+          style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
+          onPress={handleEnroll}
+          disabled={isEnrolled}>
+          <Text style={styles.enrollButtonText}>{isEnrolled ? '✓ Enrolled' : 'Enroll Now'}</Text>
         </TouchableOpacity>
 
         {/* Course Modules */}
