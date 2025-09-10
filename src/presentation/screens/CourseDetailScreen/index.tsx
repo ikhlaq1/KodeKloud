@@ -60,7 +60,7 @@ const CourseDetailScreen = () => {
         const progress = calculateCourseProgress(courseSlug, courseDetails.modules);
         setCourseProgress(progress);
       }
-    }, [courseDetails]),
+    }, [courseDetails?.modules, courseSlug]),
   );
 
   useEffect(() => {
@@ -149,7 +149,7 @@ const CourseDetailScreen = () => {
       // Persist to AsyncStorage
       await courseUseCases.enrollInCourse(courseSlug);
       // Show confirmation
-      Alert.alert('Enrolled!', `You have successfully enrolled in ${courseDetails.title}`);
+      Alert.alert('Enrolled!', `You have successfully enrolled in ${courseDetails?.title}`);
     } catch (error) {
       console.error('Error enrolling:', error);
       Alert.alert('Error', 'Failed to enroll in course');
@@ -188,6 +188,77 @@ const CourseDetailScreen = () => {
     [navigation, courseSlug],
   );
 
+  const topSection = useMemo(
+    () => {
+      if (!courseDetails) return null;
+      
+      return (
+        <View>
+          <Image
+            source={{ uri: courseDetails.thumbnail_url }}
+            style={styles.thumbnail}
+            resizeMode="cover"
+          />
+
+          <View style={styles.content}>
+            <Text style={styles.title}>{courseDetails.title}</Text>
+
+            <View style={styles.planBadge}>
+              <Text style={styles.planText}>{courseDetails.plan.toUpperCase()}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Duration:</Text>
+              <Text style={styles.value}>
+                {formatTime(courseDetails.includes_section.course_duration)}s
+              </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Instructor:</Text>
+              <Text style={styles.value}>{courseDetails.tutors?.[0]?.name || 'Tutor Name'}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Difficulty:</Text>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{courseDetails.difficulty_level}</Text>
+              </View>
+            </View>
+
+            {isEnrolled && courseProgress > 0 && (
+              <View style={styles.progressSection}>
+                <Text style={styles.progressTitle}>Course Progress: {courseProgress}%</Text>
+                <View style={styles.progressBar}>
+                  <View style={[styles.progressFill, { width: `${courseProgress}%` }]} />
+                </View>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
+              onPress={handleEnroll}
+              disabled={isEnrolled}>
+              <Text style={styles.enrollButtonText}>{isEnrolled ? '✓ Enrolled' : 'Enroll Now'}</Text>
+            </TouchableOpacity>
+
+            <View style={styles.modulesSection}>
+              <Text style={styles.sectionTitle}>
+                Course Content ({courseDetails.modules?.length || 0} modules)
+              </Text>
+            </View>
+          </View>
+        </View>
+      );
+    },
+    [courseDetails, isEnrolled, courseProgress, handleEnroll],
+  );
+
+  const keyExtractor = useCallback(
+    (item: any, index: number) => item.id?.toString() || `lesson-${index}`,
+    [],
+  );
+
   if (loadingDetails && !courseDetails) {
     return (
       <View style={styles.centerContainer}>
@@ -204,73 +275,6 @@ const CourseDetailScreen = () => {
       </View>
     );
   }
-
-  const topSection = useMemo(
-    () => (
-      <View>
-        <Image
-          source={{ uri: courseDetails.thumbnail_url }}
-          style={styles.thumbnail}
-          resizeMode="cover"
-        />
-
-        <View style={styles.content}>
-          <Text style={styles.title}>{courseDetails.title}</Text>
-
-          <View style={styles.planBadge}>
-            <Text style={styles.planText}>{courseDetails.plan.toUpperCase()}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Duration:</Text>
-            <Text style={styles.value}>
-              {formatTime(courseDetails.includes_section.course_duration)}s
-            </Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Instructor:</Text>
-            <Text style={styles.value}>{courseDetails.tutors?.[0]?.name || 'Tutor Name'}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Difficulty:</Text>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{courseDetails.difficulty_level}</Text>
-            </View>
-          </View>
-
-          {isEnrolled && courseProgress > 0 && (
-            <View style={styles.progressSection}>
-              <Text style={styles.progressTitle}>Course Progress: {courseProgress}%</Text>
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: `${courseProgress}%` }]} />
-              </View>
-            </View>
-          )}
-
-          <TouchableOpacity
-            style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
-            onPress={handleEnroll}
-            disabled={isEnrolled}>
-            <Text style={styles.enrollButtonText}>{isEnrolled ? '✓ Enrolled' : 'Enroll Now'}</Text>
-          </TouchableOpacity>
-
-          <View style={styles.modulesSection}>
-            <Text style={styles.sectionTitle}>
-              Course Content ({courseDetails.modules?.length || 0} modules)
-            </Text>
-          </View>
-        </View>
-      </View>
-    ),
-    [courseDetails, isEnrolled, courseProgress, handleEnroll],
-  );
-
-  const keyExtractor = useCallback(
-    (item: any, index: number) => item.id?.toString() || `lesson-${index}`,
-    [],
-  );
 
   return (
     <SectionList
