@@ -1,0 +1,46 @@
+import { MMKV } from 'react-native-mmkv';
+const storage = new MMKV();
+
+export const formatTime = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+};
+
+export const getCurrentPercentage = (elapsedTime: number, duration: number): number => {
+  if (!duration || duration <= 0) return 0;
+  const percentage = (elapsedTime / duration) * 100;
+  return Number(Math.max(percentage, 0).toFixed(2));
+};
+
+export const isLessonCompleted = (courseSlug: string, lessonId: string): boolean => {
+  const completionKey = `lesson_completed_${courseSlug}_${lessonId}`;
+  return storage.getBoolean(completionKey) || false;
+};
+
+export const calculateCourseProgress = (courseSlug: string, modules: any[]): number => {
+  if (!modules || modules.length === 0) return 0;
+
+  let totalLessons = 0;
+  let completedLessons = 0;
+
+  modules.forEach(module => {
+    if (module.lessons) {
+      module.lessons.forEach((lesson: any) => {
+        totalLessons++;
+        const completionKey = `lesson_completed_${courseSlug}_${lesson.id}`;
+
+        if (storage.getBoolean(completionKey)) {
+          completedLessons++;
+        }
+      });
+    }
+  });
+
+  return totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+};
+
+export const getLessonProgress = (courseSlug: string, lessonId: string): number => {
+  const progressKey = `video_progress_${courseSlug}_${lessonId}`;
+  return storage.getNumber(progressKey) || 0;
+};
