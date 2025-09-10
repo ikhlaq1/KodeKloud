@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  FlatList,
   SectionList,
 } from 'react-native';
 import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -26,7 +25,7 @@ import styles from './styles';
 import {
   calculateCourseProgress,
   formatTime,
-  isLessonCompleted,
+  getLessonCompletionPercentage,
 } from '../../../utils/helperFunctions';
 import VideoIcon from '../../../assets/svg/videoIcon';
 import ArticleIcon from '../../../assets/svg/articleIcon';
@@ -41,21 +40,20 @@ const courseUseCases = new CourseUseCases(courseRepository);
 const CourseDetailScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<CourseDetailRouteProp>();
+  const dispatch = useDispatch<AppDispatch>();
   const { courseSlug } = route.params;
   const [courseProgress, setCourseProgress] = useState(0);
 
-  const dispatch = useDispatch<AppDispatch>();
-
   // Get data from Redux
   const courseDetails = useSelector((state: RootState) => state.courses.courseDetails[courseSlug]);
-  console.log('🚀 ~ CourseDetailScreen ~ courseDetails:', courseDetails);
   const loadingDetails = useSelector((state: RootState) => state.courses.loadingDetails);
-
+  const lessonCompletions = useSelector((state: RootState) => state.courses.lessonCompletions);
   const enrolledCourses = useSelector((state: RootState) => state.courses.enrolledCourses);
   const isEnrolled = enrolledCourses.includes(courseSlug);
 
   const error = useSelector((state: RootState) => state.courses.error);
 
+  //re fetching Data once user comes back from VideoPlayerScreen
   useFocusEffect(
     useCallback(() => {
       if (courseDetails?.modules) {
@@ -104,7 +102,11 @@ const CourseDetailScreen = () => {
 
   //created separate render function for lesson
   const renderLessonItem = ({ item: lesson }: { item: any }) => {
-    const completed = isLessonCompleted(courseSlug, lesson.id);
+    const completionKey = `lesson_completed_${courseSlug}_${lesson.id}`;
+    const completedInPercentage =
+      lessonCompletions[completionKey] || getLessonCompletionPercentage(courseSlug, lesson.id);
+    console.log('🚀 ~ renderLessonItem ~ completedInPercentage:', completedInPercentage);
+    const completed = completedInPercentage > 90;
 
     return (
       <TouchableOpacity

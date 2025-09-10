@@ -13,9 +13,9 @@ export const getCurrentPercentage = (elapsedTime: number, duration: number): num
   return Number(Math.max(percentage, 0).toFixed(2));
 };
 
-export const isLessonCompleted = (courseSlug: string, lessonId: string): boolean => {
+export const getLessonCompletionPercentage = (courseSlug: string, lessonId: string): number => {
   const completionKey = `lesson_completed_${courseSlug}_${lessonId}`;
-  return storage.getBoolean(completionKey) || false;
+  return storage.getNumber(completionKey) || 0;
 };
 
 export const calculateCourseProgress = (courseSlug: string, modules: any[]): number => {

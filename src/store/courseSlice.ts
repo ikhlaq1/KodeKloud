@@ -11,6 +11,7 @@ interface CourseState {
   loadingMore: boolean;
   loadingDetails: boolean;
   error: string | null;
+  lessonCompletions: { [key: string]: number };
 }
 
 const initialState: CourseState = {
@@ -23,6 +24,7 @@ const initialState: CourseState = {
   loadingMore: false,
   loadingDetails: false,
   error: null,
+  lessonCompletions: {},
 };
 
 const courseSlice = createSlice({
@@ -78,6 +80,20 @@ const courseSlice = createSlice({
         state.enrolledCourses.push(action.payload);
       }
     },
+
+    //lesson status starts here
+
+    updateLessonCompletion: (
+      state,
+      action: PayloadAction<{ courseSlug: string; lessonId: string; percentage: number }>,
+    ) => {
+      const key = `lesson_completed_${action.payload.courseSlug}_${action.payload.lessonId}`;
+      state.lessonCompletions[key] = action.payload.percentage;
+    },
+
+    loadLessonCompletions: (state, action: PayloadAction<{ [key: string]: number }>) => {
+      state.lessonCompletions = { ...state.lessonCompletions, ...action.payload };
+    },
   },
 });
 
@@ -93,6 +109,8 @@ export const {
   setError,
   setEnrolledCourses,
   enrollInCourse,
+  updateLessonCompletion,
+  loadLessonCompletions,
 } = courseSlice.actions;
 
 export default courseSlice.reducer;

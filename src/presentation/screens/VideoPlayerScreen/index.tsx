@@ -6,10 +6,14 @@ import { VideoPlayerRouteProp } from '../../../navigation/types';
 import { MMKV } from 'react-native-mmkv';
 import styles from './styles';
 import { formatTime, getCurrentPercentage } from '../../../utils/helperFunctions';
+import { AppDispatch } from '../../../store/store';
+import { useDispatch } from 'react-redux';
+import { updateLessonCompletion } from '../../../store/courseSlice';
 
 const storage = new MMKV();
 const VideoPlayerScreen = () => {
   const route = useRoute<VideoPlayerRouteProp>();
+  const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation();
   const { lessonId, videoUrl, courseSlug } = route.params;
   const [duration, setDuration] = useState(0);
@@ -35,6 +39,14 @@ const VideoPlayerScreen = () => {
     const currentPercentage = getCurrentPercentage(elapsedTime, duration);
     console.log('🚀 ~ saveProgressss ~ currentPercentage:', currentPercentage);
     storage.set(completedInPercentageKey, currentPercentage);
+    // added status in redux to avoid force or focus re renders on other screens
+    dispatch(
+      updateLessonCompletion({
+        courseSlug,
+        lessonId,
+        percentage: currentPercentage,
+      }),
+    );
   };
 
   const onLoad = (data: any) => {
