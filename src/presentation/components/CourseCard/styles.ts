@@ -56,4 +56,19 @@ export const styles = StyleSheet.create({
     marginLeft: 12,
     textAlign: 'right',
   },
+  enrolledBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  enrolledText: {
+    color: '#fff',
+    fontSize: 12,
+    marginBottom: 1,
+    fontWeight: 'bold',
+  },
 });

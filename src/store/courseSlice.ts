@@ -4,6 +4,7 @@ import { Course, CourseDetail } from '../domain/Course';
 interface CourseState {
   courses: Course[];
   courseDetails: { [slug: string]: CourseDetail };
+  enrolledCourses: string[];
   currentPage: number;
   hasMore: boolean;
   loading: boolean;
@@ -15,6 +16,7 @@ interface CourseState {
 const initialState: CourseState = {
   courses: [],
   courseDetails: {},
+  enrolledCourses: [],
   currentPage: 1,
   hasMore: true,
   loading: false,
@@ -27,24 +29,19 @@ const courseSlice = createSlice({
   name: 'courses',
   initialState,
   reducers: {
+    //course list starts here
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
     setLoadingMore: (state, action: PayloadAction<boolean>) => {
       state.loadingMore = action.payload;
     },
-    setLoadingDetails: (state, action: PayloadAction<boolean>) => {
-      state.loadingDetails = action.payload;
-    },
+
     setCourses: (state, action: PayloadAction<Course[]>) => {
       console.log('🚀 ~ action:', action);
       state.courses = action.payload;
       state.loading = false;
       state.error = null;
-    },
-    setCourseDetails: (state, action: PayloadAction<{ slug: string; details: CourseDetail }>) => {
-      state.courseDetails[action.payload.slug] = action.payload.details;
-      state.loadingDetails = false;
     },
     appendCourses: (state, action: PayloadAction<Course[]>) => {
       console.log('🚀 ~ action:', action);
@@ -62,6 +59,25 @@ const courseSlice = createSlice({
       state.loading = false;
       state.loadingMore = false;
     },
+
+    //course detail starts here
+    setCourseDetails: (state, action: PayloadAction<{ slug: string; details: CourseDetail }>) => {
+      state.courseDetails[action.payload.slug] = action.payload.details;
+      state.loadingDetails = false;
+    },
+    setLoadingDetails: (state, action: PayloadAction<boolean>) => {
+      state.loadingDetails = action.payload;
+    },
+
+    //enrollment section starts here
+    setEnrolledCourses: (state, action: PayloadAction<string[]>) => {
+      state.enrolledCourses = action.payload;
+    },
+    enrollInCourse: (state, action: PayloadAction<string>) => {
+      if (!state.enrolledCourses.includes(action.payload)) {
+        state.enrolledCourses.push(action.payload);
+      }
+    },
   },
 });
 
@@ -75,6 +91,8 @@ export const {
   setLoadingDetails,
   setHasMore,
   setError,
+  setEnrolledCourses,
+  enrollInCourse,
 } = courseSlice.actions;
 
 export default courseSlice.reducer;
