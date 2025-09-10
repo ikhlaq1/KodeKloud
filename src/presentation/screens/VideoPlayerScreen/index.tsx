@@ -5,7 +5,11 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { VideoPlayerRouteProp } from '../../../navigation/types';
 import { MMKV } from 'react-native-mmkv';
 import styles from './styles';
-import { formatTime, getCurrentPercentage } from '../../../utils/helperFunctions';
+import {
+  formatTime,
+  getCurrentPercentage,
+  saveCourseProgress,
+} from '../../../utils/helperFunctions';
 import { AppDispatch } from '../../../store/store';
 import { useDispatch } from 'react-redux';
 import { updateLessonCompletion } from '../../../store/courseSlice';
@@ -56,6 +60,7 @@ const VideoPlayerScreen = () => {
         percentage: currentPercentage,
       }),
     );
+    saveCourseProgress(courseSlug, currentPercentage);
   };
 
   const onLoad = (data: any) => {

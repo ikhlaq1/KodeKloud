@@ -26,6 +26,7 @@ import {
   calculateCourseProgress,
   formatTime,
   getLessonCompletionPercentage,
+  saveCourseProgress,
 } from '../../../utils/helperFunctions';
 import VideoIcon from '../../../assets/svg/videoIcon';
 import ArticleIcon from '../../../assets/svg/articleIcon';
@@ -59,6 +60,8 @@ const CourseDetailScreen = () => {
       if (courseDetails?.modules) {
         const progress = calculateCourseProgress(courseSlug, courseDetails.modules);
         setCourseProgress(progress);
+        //also save progress to mmkv, this will be used to show progress in course card
+        saveCourseProgress(courseSlug, progress);
       }
     }, [courseDetails?.modules, courseSlug]),
   );
@@ -188,71 +191,68 @@ const CourseDetailScreen = () => {
     [navigation, courseSlug],
   );
 
-  const topSection = useMemo(
-    () => {
-      if (!courseDetails) return null;
-      
-      return (
-        <View>
-          <Image
-            source={{ uri: courseDetails.thumbnail_url }}
-            style={styles.thumbnail}
-            resizeMode="cover"
-          />
+  const topSection = useMemo(() => {
+    if (!courseDetails) return null;
 
-          <View style={styles.content}>
-            <Text style={styles.title}>{courseDetails.title}</Text>
+    return (
+      <View>
+        <Image
+          source={{ uri: courseDetails.thumbnail_url }}
+          style={styles.thumbnail}
+          resizeMode="cover"
+        />
 
-            <View style={styles.planBadge}>
-              <Text style={styles.planText}>{courseDetails.plan.toUpperCase()}</Text>
-            </View>
+        <View style={styles.content}>
+          <Text style={styles.title}>{courseDetails.title}</Text>
 
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Duration:</Text>
-              <Text style={styles.value}>
-                {formatTime(courseDetails.includes_section.course_duration)}s
-              </Text>
-            </View>
+          <View style={styles.planBadge}>
+            <Text style={styles.planText}>{courseDetails.plan.toUpperCase()}</Text>
+          </View>
 
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Instructor:</Text>
-              <Text style={styles.value}>{courseDetails.tutors?.[0]?.name || 'Tutor Name'}</Text>
-            </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Duration:</Text>
+            <Text style={styles.value}>
+              {formatTime(courseDetails.includes_section.course_duration)}s
+            </Text>
+          </View>
 
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Difficulty:</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{courseDetails.difficulty_level}</Text>
-              </View>
-            </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Instructor:</Text>
+            <Text style={styles.value}>{courseDetails.tutors?.[0]?.name || 'Tutor Name'}</Text>
+          </View>
 
-            {isEnrolled && courseProgress > 0 && (
-              <View style={styles.progressSection}>
-                <Text style={styles.progressTitle}>Course Progress: {courseProgress}%</Text>
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${courseProgress}%` }]} />
-                </View>
-              </View>
-            )}
-
-            <TouchableOpacity
-              style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
-              onPress={handleEnroll}
-              disabled={isEnrolled}>
-              <Text style={styles.enrollButtonText}>{isEnrolled ? '✓ Enrolled' : 'Enroll Now'}</Text>
-            </TouchableOpacity>
-
-            <View style={styles.modulesSection}>
-              <Text style={styles.sectionTitle}>
-                Course Content ({courseDetails.modules?.length || 0} modules)
-              </Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Difficulty:</Text>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{courseDetails.difficulty_level}</Text>
             </View>
           </View>
+
+          {isEnrolled && courseProgress > 0 && (
+            <View style={styles.progressSection}>
+              <Text style={styles.progressTitle}>Course Progress: {courseProgress}%</Text>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: `${courseProgress}%` }]} />
+              </View>
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
+            onPress={handleEnroll}
+            disabled={isEnrolled}>
+            <Text style={styles.enrollButtonText}>{isEnrolled ? '✓ Enrolled' : 'Enroll Now'}</Text>
+          </TouchableOpacity>
+
+          <View style={styles.modulesSection}>
+            <Text style={styles.sectionTitle}>
+              Course Content ({courseDetails.modules?.length || 0} modules)
+            </Text>
+          </View>
         </View>
-      );
-    },
-    [courseDetails, isEnrolled, courseProgress, handleEnroll],
-  );
+      </View>
+    );
+  }, [courseDetails, isEnrolled, courseProgress, handleEnroll]);
 
   const keyExtractor = useCallback(
     (item: any, index: number) => item.id?.toString() || `lesson-${index}`,

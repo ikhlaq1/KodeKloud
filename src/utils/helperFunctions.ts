@@ -44,3 +44,14 @@ export const getLessonProgress = (courseSlug: string, lessonId: string): number 
   const progressKey = `video_progress_${courseSlug}_${lessonId}`;
   return storage.getNumber(progressKey) || 0;
 };
+
+export const saveCourseProgress = (courseSlug: string, progress: number): void => {
+  const progressKey = `course_progress_${courseSlug}`;
+  storage.set(progressKey, progress);
+};
+
+// Get saved course progress from MMKV
+export const getCourseProgress = (courseSlug: string): number => {
+  const progressKey = `course_progress_${courseSlug}`;
+  return storage.getNumber(progressKey) || 0;
+};

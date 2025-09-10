@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Course } from '../../../domain/Course';
 import { styles } from './styles';
 import { RootState } from '../../../store/store';
 import { useSelector } from 'react-redux';
-import { calculateCourseProgress } from '../../../utils/helperFunctions';
+import {
+  calculateCourseProgress,
+  getCourseProgress,
+  saveCourseProgress,
+} from '../../../utils/helperFunctions';
 import Progress from '../ProgressBar';
 
 interface CourseCardProps {
@@ -17,14 +21,20 @@ const CourseCard = ({ course, onPress }: CourseCardProps) => {
   const categoryName = course.categories?.[0]?.name || '';
   const enrolledCourses = useSelector((state: RootState) => state.courses.enrolledCourses);
   const isEnrolled = enrolledCourses.includes(course.slug);
-
+  const savedProgress = getCourseProgress(course.slug);
   //using courseDetails here, it will be available for only going courses and doesnt break if details are not available
   const courseDetails = useSelector((state: RootState) => state.courses.courseDetails[course.slug]);
 
-  const progress =
-    isEnrolled && courseDetails?.modules
-      ? calculateCourseProgress(course.slug, courseDetails.modules)
-      : 0;
+  const progress = useMemo(() => {
+    if (isEnrolled && courseDetails?.modules) {
+      const calculatedProgress = calculateCourseProgress(course.slug, courseDetails.modules);
+      if (calculatedProgress !== savedProgress) {
+        saveCourseProgress(course.slug, calculatedProgress);
+      }
+      return calculatedProgress;
+    }
+    return isEnrolled ? savedProgress : 0;
+  }, [isEnrolled, courseDetails?.modules, course.slug, savedProgress]);
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
