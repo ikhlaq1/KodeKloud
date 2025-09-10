@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   FlatList,
+  SectionList,
 } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -58,6 +59,40 @@ const CourseDetailScreen = () => {
       console.error('Error fetching course details:', err);
     }
   };
+
+  // Transformed data for sectionList rendering
+  const sectionsData = useMemo(() => {
+    return (
+      courseDetails?.modules?.map((module: any, moduleIndex: number) => ({
+        title: `Module ${moduleIndex + 1}: ${module.title}`,
+        data: module.lessons || [],
+        moduleIndex,
+        moduleId: module.id,
+      })) || []
+    );
+  }, [courseDetails?.modules]);
+
+  //created separate render function for lesson
+  const renderLessonItem = ({ item: lesson }: { item: any }) => (
+    <TouchableOpacity
+      style={styles.lessonCard}
+      onPress={() => Alert.alert('Coming Soon', 'Video player will be added next')}>
+      <Text style={styles.lessonIcon}>{getLessonIcon(lesson.type)}</Text>
+      <View style={styles.lessonInfo}>
+        <Text style={styles.lessonTitle}>{lesson.title}</Text>
+        <View style={styles.lessonMeta}>
+          <Text style={styles.lessonType}>{lesson.type}</Text>
+          {lesson.duration && (
+            <Text style={styles.lessonDuration}>• {Math.ceil(lesson.duration / 60)} min</Text>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderSectionHeader = ({ section }: { section: any }) => (
+    <Text style={styles.moduleTitle}>{section.title}</Text>
+  );
 
   const handleEnroll = () => {
     Alert.alert('Success', `You have enrolled in ${courseDetails?.plan || 'this'} course!`);
@@ -149,44 +184,14 @@ const CourseDetailScreen = () => {
           <Text style={styles.sectionTitle}>
             Course Content ({courseDetails.modules?.length || 0} modules)
           </Text>
-          <FlatList
-            data={courseDetails.modules || []}
-            keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-            renderItem={({ item: module, index: moduleIndex }) => (
-              <View style={styles.module}>
-                <Text style={styles.moduleTitle}>
-                  Module {moduleIndex + 1}: {module.title}
-                </Text>
-
-                <FlatList
-                  data={module.lessons || []}
-                  keyExtractor={(lesson, index) => lesson.id?.toString() || `lesson-${index}`}
-                  renderItem={({ item: lesson }) => (
-                    <TouchableOpacity
-                      key={lesson.id}
-                      style={styles.lessonCard}
-                      onPress={() => Alert.alert('Coming Soon', 'Video player will be added next')}>
-                      <Text style={styles.lessonIcon}>{getLessonIcon(lesson.type)}</Text>
-                      <View style={styles.lessonInfo}>
-                        <Text style={styles.lessonTitle}>{lesson.title}</Text>
-                        <View style={styles.lessonMeta}>
-                          <Text style={styles.lessonType}>{lesson.type}</Text>
-                          {lesson.duration && (
-                            <Text style={styles.lessonDuration}>
-                              • {Math.ceil(lesson.duration / 60)} min
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  )}
-                  scrollEnabled={false}
-                  showsVerticalScrollIndicator={false}
-                />
-              </View>
-            )}
+          <SectionList
+            sections={sectionsData}
+            keyExtractor={(item, index) => item.id?.toString() || `lesson-${index}`}
+            renderItem={renderLessonItem}
+            renderSectionHeader={renderSectionHeader}
             scrollEnabled={false}
             showsVerticalScrollIndicator={false}
+            stickySectionHeadersEnabled={false}
           />
         </View>
       </View>
