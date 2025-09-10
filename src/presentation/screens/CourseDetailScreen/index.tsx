@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -73,21 +73,25 @@ const CourseDetailScreen = () => {
   }, [courseDetails?.modules]);
 
   //created separate render function for lesson
-  const renderLessonItem = ({ item: lesson }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.lessonCard}
-      onPress={() => Alert.alert('Coming Soon', 'Video player will be added next')}>
-      <Text style={styles.lessonIcon}>{getLessonIcon(lesson.type)}</Text>
-      <View style={styles.lessonInfo}>
-        <Text style={styles.lessonTitle}>{lesson.title}</Text>
-        <View style={styles.lessonMeta}>
-          <Text style={styles.lessonType}>{lesson.type}</Text>
-          {lesson.duration && (
-            <Text style={styles.lessonDuration}>• {Math.ceil(lesson.duration / 60)} min</Text>
-          )}
+  //wrapped in useCallback to avoid re-rendering
+  const renderLessonItem = useCallback(
+    ({ item: lesson }: { item: any }) => (
+      <TouchableOpacity
+        style={styles.lessonCard}
+        onPress={() => Alert.alert('Coming Soon', 'Video player will be added next')}>
+        <Text style={styles.lessonIcon}>{getLessonIcon(lesson.type)}</Text>
+        <View style={styles.lessonInfo}>
+          <Text style={styles.lessonTitle}>{lesson.title}</Text>
+          <View style={styles.lessonMeta}>
+            <Text style={styles.lessonType}>{lesson.type}</Text>
+            {lesson.duration && (
+              <Text style={styles.lessonDuration}>• {Math.ceil(lesson.duration / 60)} min</Text>
+            )}
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    ),
+    [],
   );
 
   const renderSectionHeader = ({ section }: { section: any }) => (
