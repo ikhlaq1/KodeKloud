@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import CourseListScreen from '../presentation/screens/CourseListScreen';
 import { RootStackParamList } from './types';
 import CourseDetailScreen from '../presentation/screens/CourseDetailScreen';
+import VideoPlayerScreen from '../presentation/screens/VideoPlayerScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -29,7 +30,14 @@ const AppNavigator = () => {
         <Stack.Screen
           name="CourseDetail"
           component={CourseDetailScreen}
-          options={{ title: 'KodeKloud Courses' }}
+          options={{ title: 'Course Details' }}
+        />
+        <Stack.Screen
+          name="VideoPlayer"
+          component={VideoPlayerScreen}
+          options={{
+            headerShown: false,
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

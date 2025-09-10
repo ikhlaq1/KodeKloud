@@ -1,0 +1,70 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Alert, BackHandler } from 'react-native';
+import Video, { VideoRef } from 'react-native-video';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { VideoPlayerRouteProp } from '../../../navigation/types';
+import { MMKV } from 'react-native-mmkv';
+import styles from './styles';
+
+const storage = new MMKV();
+const VideoPlayerScreen = () => {
+  const route = useRoute<VideoPlayerRouteProp>();
+  const navigation = useNavigation();
+  const { lessonId, videoUrl, courseSlug } = route.params;
+  const [duration, setDuration] = useState(0);
+  const videoRef = useRef<VideoRef>(null);
+  //keys to track progress and completion of video
+  const progressKey = `video_progress_${courseSlug}_${lessonId}`;
+  const completedInPercentageKey = `lesson_completed_${courseSlug}_${lessonId}`;
+
+  const onProgress = (data: any) => {
+    //todo optimise this saving time not per event but after 5 seconds
+    const timeElapsed = data.currentTime;
+    saveProgress(timeElapsed);
+  };
+
+  const handleBack = () => {
+    navigation.goBack();
+    return true;
+  };
+
+  const saveProgress = (elapsedTime: number) => {
+    storage.set(progressKey, elapsedTime);
+    const currentPercentage = (elapsedTime / duration) * 100;
+    console.log('🚀 ~ saveProgress ~ currentPercentage:', currentPercentage);
+    storage.set(completedInPercentageKey, currentPercentage);
+  };
+
+  const onLoad = (data: any) => {
+    console.log('🚀 ~ onLoad ~ data:', data);
+    setDuration(data.duration);
+    // Seek to saved position
+    const savedPosition = storage.getNumber(progressKey);
+    if (savedPosition && savedPosition > 0 && videoRef.current) {
+      videoRef.current.seek(savedPosition);
+      Alert.alert('Resuming', `Resuming from ${savedPosition}`);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Video
+        ref={videoRef}
+        source={{
+          uri: videoUrl,
+        }}
+        style={styles.video}
+        onLoad={onLoad}
+        onProgress={onProgress}
+        onError={error => {
+          console.error('Video error:', error);
+          Alert.alert('Error', 'Failed to load video');
+        }}
+        resizeMode="contain"
+        controls
+      />
+    </View>
+  );
+};
+
+export default VideoPlayerScreen;

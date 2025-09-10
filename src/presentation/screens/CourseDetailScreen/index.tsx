@@ -10,7 +10,7 @@ import {
   FlatList,
   SectionList,
 } from 'react-native';
-import { useRoute, RouteProp } from '@react-navigation/native';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import {
@@ -19,7 +19,7 @@ import {
   setError,
   enrollInCourse,
 } from '../../../store/courseSlice';
-import { RootStackParamList } from '../../../navigation/types';
+import { RootStackParamList, NavigationProp } from '../../../navigation/types';
 import { CourseRepository } from '../../../data/repositories/CourseRepository';
 import { CourseUseCases } from '../../../domain/usecases/CourseUseCases';
 import styles from './styles';
@@ -30,6 +30,7 @@ const courseRepository = new CourseRepository();
 const courseUseCases = new CourseUseCases(courseRepository);
 
 const CourseDetailScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
   const route = useRoute<CourseDetailRouteProp>();
   const { courseSlug } = route.params;
 
@@ -85,9 +86,7 @@ const CourseDetailScreen = () => {
   //wrapped in useCallback to avoid re-rendering
   const renderLessonItem = useCallback(
     ({ item: lesson }: { item: any }) => (
-      <TouchableOpacity
-        style={styles.lessonCard}
-        onPress={() => Alert.alert('Coming Soon', 'Video player will be added next')}>
+      <TouchableOpacity style={styles.lessonCard} onPress={() => handleLessonPress(lesson)}>
         <Text style={styles.lessonIcon}>{getLessonIcon(lesson.type)}</Text>
         <View style={styles.lessonInfo}>
           <Text style={styles.lessonTitle}>{lesson.title}</Text>
@@ -152,6 +151,21 @@ const CourseDetailScreen = () => {
         return '📋';
       default:
         return '📄';
+    }
+  };
+
+  const handleLessonPress = (lesson: any) => {
+    //added different vide url because vimeo video was expecting web frame
+    if (lesson.type === 'video') {
+      navigation.navigate('VideoPlayer', {
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        videoUrl:
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        courseSlug: courseSlug,
+      });
+    } else {
+      Alert.alert('Coming Soon', `${lesson.type} lessons will be available soon`);
     }
   };
 
