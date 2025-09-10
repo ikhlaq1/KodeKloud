@@ -13,7 +13,6 @@ interface CourseCardProps {
 }
 
 const CourseCard = ({ course, onPress }: CourseCardProps) => {
-  console.log('🚀 ~ CourseCard ~ course:', course);
   const authorName = course.tutors?.[0]?.name || '';
   const categoryName = course.categories?.[0]?.name || '';
   const enrolledCourses = useSelector((state: RootState) => state.courses.enrolledCourses);

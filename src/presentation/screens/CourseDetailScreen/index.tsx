@@ -121,12 +121,17 @@ const CourseDetailScreen = () => {
             </Text>
             {completed && <Text style={styles.completedLabel}>Completed</Text>}
           </View>
+
+          <View style={styles.lessonRight}>
+            <Text style={[styles.lessonPercent, completed && styles.completedPercent]}>
+              {Math.round(completedInPercentage)}%
+            </Text>
+          </View>
         </TouchableOpacity>
       );
     },
     [courseSlug, lessonCompletions],
   );
-
   const renderSectionHeader = ({ section }: { section: any }) => (
     <Text style={styles.moduleTitle}>{section.title}</Text>
   );

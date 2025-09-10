@@ -157,24 +157,6 @@ const styles = StyleSheet.create({
   module: {
     marginBottom: 20,
   },
-  moduleTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 10,
-    backgroundColor: '#F5F7FA',
-    padding: 10,
-    borderRadius: 6,
-  },
-  lessonIcon: {
-    fontSize: 20,
-    marginRight: 12,
-  },
-  lessonMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
   lessonType: {
     fontSize: 11,
     color: '#0066CC',
@@ -240,6 +222,38 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     fontSize: 11,
     fontWeight: 'bold',
+  },
+
+  moduleTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 10,
+    backgroundColor: '#F5F7FA',
+    padding: 10,
+    borderRadius: 6,
+  },
+  lessonIcon: {
+    fontSize: 20,
+    marginRight: 12,
+  },
+  lessonRight: {
+    marginLeft: 12,
+    minWidth: 40,
+    alignItems: 'flex-end',
+  },
+  lessonPercent: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+  },
+  completedPercent: {
+    color: '#4CAF50',
+  },
+  lessonMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
 });
 
