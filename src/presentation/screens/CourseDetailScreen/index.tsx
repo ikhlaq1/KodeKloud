@@ -164,7 +164,9 @@ const CourseDetailScreen = () => {
         {/* Course Info */}
         <View style={styles.infoRow}>
           <Text style={styles.label}>Duration:</Text>
-          <Text style={styles.value}>{formatDuration(courseDetails.course_duration)}</Text>
+          <Text style={styles.value}>
+            {formatDuration(courseDetails.includes_section.course_duration)}
+          </Text>
         </View>
 
         <View style={styles.infoRow}>

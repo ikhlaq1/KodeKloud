@@ -41,6 +41,10 @@ export interface Module {
   lessons: Lesson[];
 }
 
+export interface CourseDuration {
+  course_duration: number;
+}
+
 export interface CourseDetail {
   id: string;
   slug: string;
@@ -48,7 +52,7 @@ export interface CourseDetail {
   description: string;
   thumbnail_url: string;
   difficulty_level: string;
-  course_duration: number;
+  includes_section: CourseDuration;
   plan: string;
   tutors: Array<{
     name: string;
