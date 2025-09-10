@@ -29,4 +29,8 @@ export class CourseUseCases {
       hasMore: response.metadata.next_page !== null,
     };
   }
+
+  async getCourseDetails(slug: string): Promise<any> {
+    return await this.repository.getCourseDetails(slug);
+  }
 }

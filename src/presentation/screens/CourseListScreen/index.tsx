@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, ActivityIndicator, Text } from 'react-native';
-import ApiClient from '../../../data/ApiClient';
-import { Course } from '../../../domain/Course';
 import CourseCard from '../../components/CourseCard';
 import { styles } from './styles';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,11 +15,14 @@ import {
 } from '../../../store/courseSlice';
 import { CourseRepository } from '../../../data/repositories/CourseRepository';
 import { CourseUseCases } from '../../../domain/usecases/CourseUseCases';
+import { useNavigation } from '@react-navigation/native';
+import { NavigationProp } from '../../../navigation/types';
 
 const courseRepository = new CourseRepository();
 const courseUseCases = new CourseUseCases(courseRepository);
 
 const CourseListScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
   const dispatch = useDispatch<AppDispatch>();
   //replaced all state variables with values in store
   const { courses, currentPage, hasMore, loading, loadingMore, error } = useSelector(
@@ -63,8 +64,12 @@ const CourseListScreen = () => {
     setLoadingMore(false);
   };
 
-  const handleCoursePress = (course: Course) => {
-    console.log('Course pressed:', course.slug);
+  const handleCoursePress = (course: any) => {
+    navigation.navigate('CourseDetail', {
+      courseId: course.id,
+      courseSlug: course.slug,
+      courseTitle: course.title,
+    });
   };
 
   if (loading) {
