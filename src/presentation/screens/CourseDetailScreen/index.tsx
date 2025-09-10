@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  FlatList,
   SectionList,
 } from 'react-native';
 import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -26,7 +25,7 @@ import styles from './styles';
 import {
   calculateCourseProgress,
   formatTime,
-  isLessonCompleted,
+  getLessonCompletionPercentage,
 } from '../../../utils/helperFunctions';
 import VideoIcon from '../../../assets/svg/videoIcon';
 import ArticleIcon from '../../../assets/svg/articleIcon';
@@ -41,21 +40,20 @@ const courseUseCases = new CourseUseCases(courseRepository);
 const CourseDetailScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<CourseDetailRouteProp>();
+  const dispatch = useDispatch<AppDispatch>();
   const { courseSlug } = route.params;
   const [courseProgress, setCourseProgress] = useState(0);
 
-  const dispatch = useDispatch<AppDispatch>();
-
   // Get data from Redux
   const courseDetails = useSelector((state: RootState) => state.courses.courseDetails[courseSlug]);
-  console.log('🚀 ~ CourseDetailScreen ~ courseDetails:', courseDetails);
   const loadingDetails = useSelector((state: RootState) => state.courses.loadingDetails);
-
+  const lessonCompletions = useSelector((state: RootState) => state.courses.lessonCompletions);
   const enrolledCourses = useSelector((state: RootState) => state.courses.enrolledCourses);
   const isEnrolled = enrolledCourses.includes(courseSlug);
 
   const error = useSelector((state: RootState) => state.courses.error);
 
+  //re fetching Data once user comes back from VideoPlayerScreen
   useFocusEffect(
     useCallback(() => {
       if (courseDetails?.modules) {
@@ -103,28 +101,37 @@ const CourseDetailScreen = () => {
   }, [courseDetails?.modules]);
 
   //created separate render function for lesson
-  const renderLessonItem = ({ item: lesson }: { item: any }) => {
-    const completed = isLessonCompleted(courseSlug, lesson.id);
+  const renderLessonItem = useCallback(
+    ({ item: lesson }: { item: any }) => {
+      const completionKey = `lesson_completed_${courseSlug}_${lesson.id}`;
+      const completedInPercentage =
+        lessonCompletions[completionKey] || getLessonCompletionPercentage(courseSlug, lesson.id);
+      const completed = completedInPercentage > 90;
 
-    return (
-      <TouchableOpacity
-        style={[styles.lessonCard, completed && styles.completedLesson]}
-        onPress={() => handleLessonPress(lesson)}>
-        {/* <Text style={styles.lessonIcon}>{completed ? '✅' : getLessonIcon(lesson.type)}</Text> */}
-        <View style={styles.lessonIcon}>
-          {completed ? <CompletedIcon height={20} width={20} /> : getLessonIcon(lesson.type)}
-        </View>
-        <View style={styles.lessonInfo}>
-          <Text style={[styles.lessonTitle, completed && styles.completedText]}>
-            {lesson.title}
-          </Text>
+      return (
+        <TouchableOpacity
+          style={[styles.lessonCard, completed && styles.completedLesson]}
+          onPress={() => handleLessonPress(lesson)}>
+          <View style={styles.lessonIcon}>
+            {completed ? <CompletedIcon height={20} width={20} /> : getLessonIcon(lesson.type)}
+          </View>
+          <View style={styles.lessonInfo}>
+            <Text style={[styles.lessonTitle, completed && styles.completedText]}>
+              {lesson.title}
+            </Text>
+            {completed && <Text style={styles.completedLabel}>Completed</Text>}
+          </View>
 
-          {completed && <Text style={styles.completedLabel}>Completed</Text>}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
+          <View style={styles.lessonRight}>
+            <Text style={[styles.lessonPercent, completed && styles.completedPercent]}>
+              {Math.round(completedInPercentage)}%
+            </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [courseSlug, lessonCompletions],
+  );
   const renderSectionHeader = ({ section }: { section: any }) => (
     <Text style={styles.moduleTitle}>{section.title}</Text>
   );
@@ -139,10 +146,8 @@ const CourseDetailScreen = () => {
     try {
       // Update Redux state
       dispatch(enrollInCourse(courseSlug));
-
       // Persist to AsyncStorage
       await courseUseCases.enrollInCourse(courseSlug);
-
       // Show confirmation
       Alert.alert('Enrolled!', `You have successfully enrolled in ${courseDetails.title}`);
     } catch (error) {
@@ -165,20 +170,23 @@ const CourseDetailScreen = () => {
     }
   };
 
-  const handleLessonPress = (lesson: any) => {
-    //added different vide url because vimeo video was expecting web frame
-    if (lesson.type === 'video') {
-      navigation.navigate('VideoPlayer', {
-        lessonId: lesson.id,
-        lessonTitle: lesson.title,
-        videoUrl:
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        courseSlug: courseSlug,
-      });
-    } else {
-      Alert.alert('Coming Soon', `${lesson.type} lessons will be available soon`);
-    }
-  };
+  //added different vide url because vimeo video was expecting web frame
+  const handleLessonPress = useCallback(
+    (lesson: any) => {
+      if (lesson.type === 'video') {
+        navigation.navigate('VideoPlayer', {
+          lessonId: lesson.id,
+          lessonTitle: lesson.title,
+          videoUrl:
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          courseSlug: courseSlug,
+        });
+      } else {
+        Alert.alert('Coming Soon', `${lesson.type} lessons will be available soon`);
+      }
+    },
+    [navigation, courseSlug],
+  );
 
   if (loadingDetails && !courseDetails) {
     return (
@@ -197,75 +205,87 @@ const CourseDetailScreen = () => {
     );
   }
 
-  return (
-    <ScrollView style={styles.container}>
-      <Image
-        source={{ uri: courseDetails.thumbnail_url }}
-        style={styles.thumbnail}
-        resizeMode="cover"
-      />
+  const topSection = useMemo(
+    () => (
+      <View>
+        <Image
+          source={{ uri: courseDetails.thumbnail_url }}
+          style={styles.thumbnail}
+          resizeMode="cover"
+        />
 
-      <View style={styles.content}>
-        <Text style={styles.title}>{courseDetails.title}</Text>
+        <View style={styles.content}>
+          <Text style={styles.title}>{courseDetails.title}</Text>
 
-        {/* Course Plan Badge */}
-        <View style={styles.planBadge}>
-          <Text style={styles.planText}>{courseDetails.plan.toUpperCase()}</Text>
-        </View>
-
-        {/* Course Info */}
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Duration:</Text>
-          <Text style={styles.value}>
-            {formatTime(courseDetails.includes_section.course_duration)}s
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Instructor:</Text>
-          <Text style={styles.value}>{courseDetails.tutors?.[0]?.name || 'Tutor Name'}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Difficulty:</Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{courseDetails.difficulty_level}</Text>
+          <View style={styles.planBadge}>
+            <Text style={styles.planText}>{courseDetails.plan.toUpperCase()}</Text>
           </View>
-        </View>
 
-        {isEnrolled && courseProgress > 0 && (
-          <View style={styles.progressSection}>
-            <Text style={styles.progressTitle}>Course Progress: {courseProgress}%</Text>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${courseProgress}%` }]} />
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Duration:</Text>
+            <Text style={styles.value}>
+              {formatTime(courseDetails.includes_section.course_duration)}s
+            </Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Instructor:</Text>
+            <Text style={styles.value}>{courseDetails.tutors?.[0]?.name || 'Tutor Name'}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Difficulty:</Text>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{courseDetails.difficulty_level}</Text>
             </View>
           </View>
-        )}
 
-        <TouchableOpacity
-          style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
-          onPress={handleEnroll}
-          disabled={isEnrolled}>
-          <Text style={styles.enrollButtonText}>{isEnrolled ? '✓ Enrolled' : 'Enroll Now'}</Text>
-        </TouchableOpacity>
+          {isEnrolled && courseProgress > 0 && (
+            <View style={styles.progressSection}>
+              <Text style={styles.progressTitle}>Course Progress: {courseProgress}%</Text>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: `${courseProgress}%` }]} />
+              </View>
+            </View>
+          )}
 
-        {/* Course Modules */}
-        <View style={styles.modulesSection}>
-          <Text style={styles.sectionTitle}>
-            Course Content ({courseDetails.modules?.length || 0} modules)
-          </Text>
-          <SectionList
-            sections={sectionsData}
-            keyExtractor={(item, index) => item.id?.toString() || `lesson-${index}`}
-            renderItem={renderLessonItem}
-            renderSectionHeader={renderSectionHeader}
-            scrollEnabled={false}
-            showsVerticalScrollIndicator={false}
-            stickySectionHeadersEnabled={false}
-          />
+          <TouchableOpacity
+            style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
+            onPress={handleEnroll}
+            disabled={isEnrolled}>
+            <Text style={styles.enrollButtonText}>{isEnrolled ? '✓ Enrolled' : 'Enroll Now'}</Text>
+          </TouchableOpacity>
+
+          <View style={styles.modulesSection}>
+            <Text style={styles.sectionTitle}>
+              Course Content ({courseDetails.modules?.length || 0} modules)
+            </Text>
+          </View>
         </View>
       </View>
-    </ScrollView>
+    ),
+    [courseDetails, isEnrolled, courseProgress, handleEnroll],
+  );
+
+  const keyExtractor = useCallback(
+    (item: any, index: number) => item.id?.toString() || `lesson-${index}`,
+    [],
+  );
+
+  return (
+    <SectionList
+      style={styles.container}
+      sections={sectionsData}
+      keyExtractor={keyExtractor}
+      renderItem={renderLessonItem}
+      renderSectionHeader={renderSectionHeader}
+      stickySectionHeadersEnabled={false}
+      showsVerticalScrollIndicator={false}
+      ListHeaderComponent={topSection}
+      initialNumToRender={10}
+      windowSize={5}
+      removeClippedSubviews
+    />
   );
 };
 
