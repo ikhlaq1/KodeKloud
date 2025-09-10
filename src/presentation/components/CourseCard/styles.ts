@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -58,8 +58,8 @@ export const styles = StyleSheet.create({
   },
   enrolledBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: Platform.OS === 'ios' ? 20 : 10,
+    right: 10,
     backgroundColor: '#4CAF50',
     paddingHorizontal: 10,
     paddingVertical: 5,

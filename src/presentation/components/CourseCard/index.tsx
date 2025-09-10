@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import {
   calculateCourseProgress,
   getCourseProgress,
+  getSecureImageUrl,
   saveCourseProgress,
 } from '../../../utils/helperFunctions';
 import Progress from '../ProgressBar';
@@ -38,7 +39,19 @@ const CourseCard = ({ course, onPress }: CourseCardProps) => {
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Image source={{ uri: course.thumbnail_url }} style={styles.thumbnail} resizeMode="cover" />
+      <Image
+        onError={err => {
+          console.log('Error loading thumbnail', err);
+        }}
+        source={{ uri: getSecureImageUrl(course.thumbnail_url) }}
+        style={styles.thumbnail}
+        resizeMode="cover"
+      />
+      {isEnrolled && (
+        <View style={styles.enrolledBadge}>
+          <Text style={styles.enrolledText}>✓ Enrolled</Text>
+        </View>
+      )}
 
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
@@ -46,11 +59,7 @@ const CourseCard = ({ course, onPress }: CourseCardProps) => {
         </Text>
 
         <Text style={styles.author}>by {authorName}</Text>
-        {isEnrolled && (
-          <View style={styles.enrolledBadge}>
-            <Text style={styles.enrolledText}>✓ Enrolled</Text>
-          </View>
-        )}
+
         {isEnrolled && progress > 0 && <Progress progress={progress} />}
 
         <View style={styles.footer}>

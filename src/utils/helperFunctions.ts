@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { MMKV } from 'react-native-mmkv';
 const storage = new MMKV();
 
@@ -54,4 +55,13 @@ export const saveCourseProgress = (courseSlug: string, progress: number): void =
 export const getCourseProgress = (courseSlug: string): number => {
   const progressKey = `course_progress_${courseSlug}`;
   return storage.getNumber(progressKey) || 0;
+};
+
+//added this helper function because ios rejects image urls with http only
+export const getSecureImageUrl = (url: string): string => {
+  if (!url) return '';
+  if (Platform.OS === 'ios' && url.startsWith('http://')) {
+    return url.replace('http://', 'https://');
+  }
+  return url;
 };

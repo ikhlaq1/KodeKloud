@@ -40,13 +40,11 @@ const courseSlice = createSlice({
     },
 
     setCourses: (state, action: PayloadAction<Course[]>) => {
-      console.log('🚀 ~ action:', action);
       state.courses = action.payload;
       state.loading = false;
       state.error = null;
     },
     appendCourses: (state, action: PayloadAction<Course[]>) => {
-      console.log('🚀 ~ action:', action);
       state.courses = [...state.courses, ...action.payload];
       state.loadingMore = false;
     },
