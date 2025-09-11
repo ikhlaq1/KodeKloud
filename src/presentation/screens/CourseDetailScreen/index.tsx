@@ -26,6 +26,7 @@ import {
   calculateCourseProgress,
   formatTime,
   getLessonCompletionPercentage,
+  getSecureImageUrl,
   saveCourseProgress,
 } from '../../../utils/helperFunctions';
 import VideoIcon from '../../../assets/svg/videoIcon';
@@ -197,7 +198,7 @@ const CourseDetailScreen = () => {
     return (
       <View>
         <Image
-          source={{ uri: courseDetails.thumbnail_url }}
+          source={{ uri: getSecureImageUrl(courseDetails.thumbnail_url) }}
           style={styles.thumbnail}
           resizeMode="cover"
         />

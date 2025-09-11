@@ -9,6 +9,16 @@
 
 A mobile Learning Management System (LMS) built with React Native that enables learners to browse courses, watch video lessons, and track their learning progress. This app demonstrates enterprise-level architecture patterns and best practices for a React Native App.
 
+## 🎬 Demo
+
+### 📱 Full App Demo
+
+[![App Demo](https://drive.google.com/file/d/1ah9ex9qid2OlozaiRHdrPX8zTBaYGpCs/view?usp=sharing)]
+
+### 🔗 Deep Linking Demo
+
+[![Deep Linking Demo](https://drive.google.com/file/d/1sFje5UVH-nJU3ohmMTwTEInSL8nVhkkd/view?usp=sharing)]
+
 ### ✨ Key Features
 
 - 📚 **Browse Courses** - Paginated course list with infinite scroll
