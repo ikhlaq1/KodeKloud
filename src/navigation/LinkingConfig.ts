@@ -1,5 +1,5 @@
 const linking = {
-  prefixes: ['kodekloud://', 'https://kodekloud.com'], // custom scheme and optional domain
+  prefixes: ['kodekloud://', 'https://kodekloud.com'],
   config: {
     screens: {
       CourseList: 'courses',

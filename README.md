@@ -1,97 +1,326 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# KodeKloud Mobile LMS Mini App
 
-# Getting Started
+![CI/CD Pipeline](https://github.com/ikhlaqkhan/KodeKloud/actions/workflows/ci.yml/badge.svg)
+![React Native](https://img.shields.io/badge/React%20Native-0.81.1-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue)
+![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-green)
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 📱 Overview
 
-## Step 1: Start Metro
+A mobile Learning Management System (LMS) built with React Native that enables learners to browse courses, watch video lessons, and track their learning progress. This app demonstrates enterprise-level architecture patterns and best practices for a React Native App.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+### ✨ Key Features
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- 📚 **Browse Courses** - Paginated course list with infinite scroll
+- 🎥 **Video Playback** - Stream lessons with resume capability
+- 📊 **Progress Tracking** - Track completion percentage per lesson and course
+- 💾 **Data persistence** - Local enrollment and progress persistence
+- 🏗️ **Clean Architecture** - Separation of concerns with domain/data/presentation layers
+- 🎯 **Smart Resume** - Videos resume from last watched position
 
-```sh
-# Using npm
+## 🛠️ Tech Stack
+
+### Core Technologies
+
+- **React Native 0.81.1** - Cross-platform mobile framework
+- **TypeScript 5.8.3** - Type-safe development
+- **Redux Toolkit** - Global state management
+- **React Navigation v7** - Navigation and routing
+
+### Architecture & Patterns
+
+- **Clean Architecture** - Clear separation between UI, business logic, and data
+- **Repository Pattern** - Abstraction of data sources
+- **MVVM Pattern** - ViewModel pattern with Redux
+- **Use Cases** - Encapsulated business logic
+
+### Storage & Persistence
+
+- **MMKV** - High-performance key-value storage for video progress
+- **AsyncStorage** - Lightweight storage for enrollment data
+- **Redux** - In-memory state management
+
+### Development Tools
+
+- **ESLint & Prettier** - Code quality and formatting
+- **Jest** - Unit testing framework (parially implemented in other branch : `unit-tests`)
+- **GitHub Actions** - CI/CD pipeline (created simple android app building workflow)
+- **TypeScript** - Static type checking
+
+## 🏗️ Project Architecture
+
+```
+src/
+├── domain/                 # Business logic & entities
+│   ├── Course.ts          # Course entity & types
+│   ├── repositories/      # Repository interfaces
+│   └── usecases/          # Business operations
+│       └── CourseUseCases.ts
+├── data/                  # Data layer
+│   ├── ApiClient.ts       # API client
+│   └── repositories/      # Repository implementations
+│       └── CourseRepository.ts
+├── presentation/          # UI layer
+│   ├── screens/          # App screens
+│   │   ├── CourseListScreen/
+│   │   ├── CourseDetailScreen/
+│   │   └── VideoPlayerScreen/
+│   ├── components/       # Reusable components
+│   │   ├── CourseCard/
+│   │   └── ProgressBar/
+│   └── navigation/       # Navigation setup
+├── store/                # Redux store
+│   ├── courseSlice.ts    # Course state management
+│   └── store.ts         # Store configuration
+└── utils/               # Helper functions
+    └── helperFunctions.ts
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js >= 20
+- React Native development environment ([Setup Guide](https://reactnative.dev/docs/environment-setup))
+- iOS: Xcode 15+ (Mac only)
+- Android: Android Studio with SDK 34
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/ikhlaqkhan/KodeKloud.git
+cd KodeKloud
+
+# Install dependencies
+npm install
+
+# iOS only: Install pods
+cd ios && pod install && cd ..
+```
+
+### Running the App
+
+```bash
+# Start Metro bundler
 npm start
 
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+# Run on iOS
 npm run ios
 
-# OR using Yarn
-yarn ios
+# Run on Android
+npm run android
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Development Commands
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```bash
+# Run linter
+npm run lint
 
-## Step 3: Modify your app
+# Run tests
+npm test
 
-Now that you have successfully run the app, let's make changes!
+# Type checking
+npx tsc --noEmit
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+# Build Android APK (Debug)
+cd android && ./gradlew assembleDebug
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+# Build Android APK (Release)
+cd android && ./gradlew assembleRelease
+```
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+## 📡 API Integration
 
-## Congratulations! :tada:
+### Base URL
 
-You've successfully run and modified your React Native App. :partying_face:
+```
+https://learn-api.kodekloud.com/api
+```
 
-### Now what?
+### Endpoints
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+#### Get Courses (Paginated)
 
-# Troubleshooting
+```http
+GET /courses?page={page}
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+Response:
+{
+  "courses": [
+    {
+      "id": "c4f8aa40-d06e-4731-b6bd-4221632df06c",
+      "slug": "crash-course-docker-for-absolute-beginner",
+      "title": "Crash Course: Docker For Absolute Beginners",
+      "thumbnail_url": "http://res.cloudinary.com/kodekloud/...",
+      "difficulty_level": "beginner",
+      "plan": "free",
+      "tutors": [{"name": "Mumshad Mannambeth"}],
+      "categories": [{"name": "DevOps"}]
+    }
+  ],
+  "metadata": {
+    "page": 1,
+    "total_count": 159,
+    "limit": 12,
+    "next_page": 2
+  }
+}
+```
 
-# Learn More
+#### Get Course Details
 
-To learn more about React Native, take a look at the following resources:
+```http
+GET /courses/{slug}
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Response:
+{
+  "course": {
+    "id": "uuid",
+    "title": "Course Title",
+    "description": "Detailed description",
+    "course_duration": 7200,  // in seconds
+    "plan": "free",
+    "modules": [
+      {
+        "id": "module-1",
+        "title": "Introduction",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "Getting Started",
+            "type": "video",
+            "duration": 300,
+            "video_url": "https://..."
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## 💾 Local Storage Schema
+
+### MMKV Keys (High-Performance Storage)
+
+```javascript
+// Video playback position (in seconds)
+`video_progress_${courseSlug}_${lessonId}` 
+
+// Lesson completion percentage (0-100)
+`lesson_completed_${courseSlug}_${lessonId}` 
+
+// Overall course progress percentage
+`course_progress_${courseSlug}`
+```
+
+### AsyncStorage Keys (Persistent Storage)
+
+```javascript
+// Array of enrolled course slugs
+'@enrolled_courses' // string[]
+```
+
+### Redux State Structure
+
+```typescript
+{
+  courses: {
+    courses: Course[],
+    courseDetails: { [slug: string]: CourseDetail },
+    enrolledCourses: string[],
+    lessonCompletions: { [key: string]: number },
+    currentPage: number,
+    hasMore: boolean,
+    loading: boolean,
+    error: string | null
+  }
+}
+```
+
+## 🧪 Testing
+
+### Unit Tests (implemented in unit-tests branch only)
+
+```bash
+# Run all tests
+npm test (runs on unit-tests branch only)
+
+# Run specific test file
+npm test CourseUseCases.test.ts (runs on unit-tests branch only)
+
+```
+
+## 📦 CI/CD Pipeline
+
+GitHub Actions workflow runs on push to `develop`:
+
+1. **Checkout** - Get latest code
+2. **Setup** - Node.js and JDK configuration
+3. **Install** - NPM dependencies
+4. **Lint** - ESLint code quality checks
+5. **Type Check** - TypeScript validation
+6. **Test** - Jest unit tests
+7. **Build** - Android APK generation
+8. **Upload** - APK artifact for download
+
+### GitHub Actions Workflow
+
+```yaml
+name: CI Pipeline
+on:
+  push:
+    branches: [ build-test-branch ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - Checkout
+      - Setup Node & Java
+      - Install Dependencies
+      - Lint & Test
+      - Build APK
+      - Upload Artifacts
+```
+
+## 🎯 Key Implementation Highlights
+
+### Clean Architecture Benefits
+
+- **Separation of Concerns**: UI, business logic, and data layers are independent
+- **Testability**: Each layer can be tested in isolation (not implemented)
+- **Scalability**: Easy to add new features without breaking existing code
+
+### Performance Optimizations
+
+- **Lazy Loading**: Courses load on-demand with pagination
+- **Image Compatibility**: HTTPS conversion for iOS compatibility
+- **Progress Caching**: MMKV for fast read/write operations
+- **Optimized Re-renders**: Redux with proper memoization
+
+### User Experience Features
+
+- **Resume Playback**: Videos automatically resume from last position
+- **Progress Indicators**: Visual feedback on course and lesson completion
+- **Smooth Navigation**: Stack navigation with proper back handling
+
+## 📈 Technical Decisions
+
+### Why MMKV over AsyncStorage for Progress?
+
+- **Performance**: 30x faster than AsyncStorage
+- **Synchronous API**: No async/await needed for frequent updates
+- **Perfect for**: Video position updates every 5 seconds
+
+### Why Repository Pattern?
+
+- **Abstraction**: UI doesn't know where data comes from
+- **Flexibility**: Easy to switch between API/Local/Mock data
+- **Testing**: Can mock repositories for unit tests
+
+### Why Redux Toolkit?
+
+- **Modern Redux**: Less boilerplate, better developer experience
+- **Predictable**: Single source of truth for app state
