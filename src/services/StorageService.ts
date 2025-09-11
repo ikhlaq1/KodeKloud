@@ -1,8 +1,8 @@
 import { MMKV } from 'react-native-mmkv';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 class StorageService {
   private storage: MMKV;
-
+  private ENROLLMENT_KEY = '@enrolled_courses';
   constructor() {
     this.storage = new MMKV();
   }
@@ -47,19 +47,34 @@ class StorageService {
 
   // enrolled course metjods
   async getEnrolledCourses(): Promise<string[]> {
-    const data = this.storage.getString('@enrolled_courses');
-    return data ? JSON.parse(data) : [];
+    try {
+      const data = await AsyncStorage.getItem(this.ENROLLMENT_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Error loading enrolled courses:', error);
+      return [];
+    }
   }
 
   async saveEnrolledCourses(courses: string[]): Promise<void> {
-    this.storage.set('@enrolled_courses', JSON.stringify(courses));
+    try {
+      await AsyncStorage.setItem(this.ENROLLMENT_KEY, JSON.stringify(courses));
+    } catch (error) {
+      console.error('Error saving enrolled courses:', error);
+      throw error;
+    }
   }
 
   async addEnrolledCourse(courseSlug: string): Promise<void> {
-    const courses = await this.getEnrolledCourses();
-    if (!courses.includes(courseSlug)) {
-      courses.push(courseSlug);
-      await this.saveEnrolledCourses(courses);
+    try {
+      const courses = await this.getEnrolledCourses();
+      if (!courses.includes(courseSlug)) {
+        courses.push(courseSlug);
+        await this.saveEnrolledCourses(courses);
+      }
+    } catch (error) {
+      console.error('Error adding enrolled course:', error);
+      throw error;
     }
   }
 }

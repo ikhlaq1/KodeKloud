@@ -13,17 +13,14 @@ import {
   setLoading,
   setLoadingMore,
 } from '../../../store/courseSlice';
-import { CourseRepository } from '../../../data/repositories/CourseRepository';
-import { CourseUseCases } from '../../../domain/usecases/CourseUseCases';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '../../../navigation/types';
-
-const courseRepository = new CourseRepository();
-const courseUseCases = new CourseUseCases(courseRepository);
+import { useCourseUseCases } from '../../../context/DependencyContext';
 
 const CourseListScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const dispatch = useDispatch<AppDispatch>();
+  const courseUseCases = useCourseUseCases();
   //replaced all state variables with values in store
   const { courses, currentPage, hasMore, loading, loadingMore, error } = useSelector(
     (state: RootState) => state.courses,

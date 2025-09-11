@@ -2,6 +2,7 @@ import { CourseRepositoryInterface } from '../../domain/repositories/CourseRepos
 import { CourseListResponse } from '../../domain/Course';
 import ApiClient from '../ApiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import StorageService from '../../services/StorageService';
 
 export class CourseRepository implements CourseRepositoryInterface {
   private ENROLLMENT_KEY = '@enrolled_courses';
@@ -22,8 +23,7 @@ export class CourseRepository implements CourseRepositoryInterface {
 
   async getEnrolledCourses(): Promise<string[]> {
     try {
-      const data = await AsyncStorage.getItem(this.ENROLLMENT_KEY);
-      return data ? JSON.parse(data) : [];
+      return await StorageService.getEnrolledCourses();
     } catch (error) {
       console.error('Error loading enrolled courses:', error);
       return [];
@@ -32,11 +32,7 @@ export class CourseRepository implements CourseRepositoryInterface {
 
   async saveEnrolledCourse(slug: string): Promise<void> {
     try {
-      const enrollments = await this.getEnrolledCourses();
-      if (!enrollments.includes(slug)) {
-        enrollments.push(slug);
-        await AsyncStorage.setItem(this.ENROLLMENT_KEY, JSON.stringify(enrollments));
-      }
+      await StorageService.addEnrolledCourse(slug);
     } catch (error) {
       console.error('Error saving enrollment:', error);
       throw error;

@@ -19,8 +19,7 @@ import {
   enrollInCourse,
 } from '../../../store/courseSlice';
 import { RootStackParamList, NavigationProp } from '../../../navigation/types';
-import { CourseRepository } from '../../../data/repositories/CourseRepository';
-import { CourseUseCases } from '../../../domain/usecases/CourseUseCases';
+
 import styles from './styles';
 import {
   calculateCourseProgress,
@@ -33,18 +32,16 @@ import VideoIcon from '../../../assets/svg/videoIcon';
 import ArticleIcon from '../../../assets/svg/articleIcon';
 import LinkIcon from '../../../assets/svg/linkIcon';
 import CompletedIcon from '../../../assets/svg/compeletedIcon';
+import { useCourseUseCases } from '../../../context/DependencyContext';
 
 type CourseDetailRouteProp = RouteProp<RootStackParamList, 'CourseDetail'>;
-
-const courseRepository = new CourseRepository();
-const courseUseCases = new CourseUseCases(courseRepository);
-
 const CourseDetailScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<CourseDetailRouteProp>();
   const dispatch = useDispatch<AppDispatch>();
   const { courseSlug } = route.params;
   const [courseProgress, setCourseProgress] = useState(0);
+  const courseUseCases = useCourseUseCases();
 
   // Get data from Redux
   const courseDetails = useSelector((state: RootState) => state.courses.courseDetails[courseSlug]);
