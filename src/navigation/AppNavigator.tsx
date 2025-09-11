@@ -5,12 +5,12 @@ import CourseListScreen from '../presentation/screens/CourseListScreen';
 import { RootStackParamList } from './types';
 import CourseDetailScreen from '../presentation/screens/CourseDetailScreen';
 import VideoPlayerScreen from '../presentation/screens/VideoPlayerScreen';
-
+import linking from './LinkingConfig';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const AppNavigator = () => {
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator
         initialRouteName="CourseList"
         screenOptions={{
