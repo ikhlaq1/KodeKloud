@@ -11,13 +11,15 @@ A mobile Learning Management System (LMS) built with React Native that enables l
 
 ## 🎬 Demo
 
+[ScreenShots](https://drive.google.com/drive/folders/1GiwYF6YL4y3wisBtLc92_e0C1lc6wXEU?usp=sharing)
+
 ### 📱 Full App Demo
 
-[Full App Demo](https://drive.google.com/file/d/1ah9ex9qid2OlozaiRHdrPX8zTBaYGpCs/view?usp=sharing)
+[Full App Demo](https://drive.google.com/file/d/1yOPTjtDFLK6J3Ulbj56lObdXR__A1ISw/view?usp=sharing)
 
 ### 🔗 Deep Linking Demo
 
-[Deep Linking Demo](https://drive.google.com/file/d/1sFje5UVH-nJU3ohmMTwTEInSL8nVhkkd/view?usp=sharing)
+[Deep Linking Demo](https://drive.google.com/file/d/1MdKhPpwOWlAzRKOV-PGhKYh49hdriONI/view?usp=sharing)
 
 ### ✨ Key Features
 
