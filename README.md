@@ -61,29 +61,42 @@ A mobile Learning Management System (LMS) built with React Native that enables l
 
 ```
 src/
-├── domain/                 # Business logic & entities
-│   ├── Course.ts          # Course entity & types
-│   ├── repositories/      # Repository interfaces
-│   └── usecases/          # Business operations
+├── domain/                    # Business logic & entities
+│   ├── Course.ts              # Course entity & types
+│   ├── repositories/          # Repository interfaces
+│   │   └── CourseRepositoryInterface.ts
+│   └── usecases/              # Business operations
 │       └── CourseUseCases.ts
-├── data/                  # Data layer
-│   ├── ApiClient.ts       # API client
-│   └── repositories/      # Repository implementations
+├── data/                      # Data layer
+│   ├── ApiClient.ts           # Network API client
+│   └── repositories/          # Repository implementations
 │       └── CourseRepository.ts
-├── presentation/          # UI layer
-│   ├── screens/          # App screens
+├── presentation/              # UI layer
+│   ├── screens/               # App screens
 │   │   ├── CourseListScreen/
 │   │   ├── CourseDetailScreen/
 │   │   └── VideoPlayerScreen/
-│   ├── components/       # Reusable components
+│   ├── components/            # Reusable UI components
 │   │   ├── CourseCard/
-│   │   └── ProgressBar/
-│   └── navigation/       # Navigation setup
-├── store/                # Redux store
-│   ├── courseSlice.ts    # Course state management
-│   └── store.ts         # Store configuration
-└── utils/               # Helper functions
-    └── helperFunctions.ts
+│   │   ├── ProgressBar/
+│   │   ├── LoadingView/       # NEW: Reusable loading component
+│   │   └── ErrorView/         # NEW: Reusable error component
+│   ├── hooks/                 # NEW: Custom hooks (ViewModels)
+│   │   ├── useCourseList.ts  # Course list business logic
+│   │   └── useCourseDetail.ts # Course detail business logic
+│   └── navigation/            # Navigation setup
+│       ├── AppNavigator.tsx
+│       ├── LinkingConfig.ts   # Deep linking configuration
+│       └── types.ts           # Navigation types
+├── context/                   # NEW: Dependency injection
+│   └── DependencyContext.tsx  # DI container using Context API
+├── services/                  # NEW: Cross-cutting services
+│   └── StorageService.ts      # Centralized storage operations
+├── store/                     # Redux state management
+│   ├── courseSlice.ts         # Course state & actions
+│   └── store.ts               # Store configuration
+└── utils/                     # Helper functions
+    └── helperFunctions.ts     # Utility functions
 ```
 
 ## 🚀 Getting Started
