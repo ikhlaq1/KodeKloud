@@ -20,8 +20,6 @@ const VideoPlayerScreen = () => {
   const { lessonId, videoUrl, courseSlug } = route.params;
   const [duration, setDuration] = useState(0);
   const videoRef = useRef<VideoRef>(null);
-  const progressKey = `video_progress_${courseSlug}_${lessonId}`;
-  const completedInPercentageKey = `lesson_completed_${courseSlug}_${lessonId}`;
   const lastSaveTimeRef = useRef<number>(0);
   const currentTimeRef = useRef<number>(0);
   const onProgress = (data: any) => {

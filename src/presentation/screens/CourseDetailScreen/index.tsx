@@ -1,93 +1,43 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Image,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
   SectionList,
 } from 'react-native';
-import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../../store/store';
-import {
-  setLoadingDetails,
-  setCourseDetails,
-  setError,
-  enrollInCourse,
-} from '../../../store/courseSlice';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+
 import { RootStackParamList, NavigationProp } from '../../../navigation/types';
 
 import styles from './styles';
 import {
-  calculateCourseProgress,
   formatTime,
   getLessonCompletionPercentage,
   getSecureImageUrl,
-  saveCourseProgress,
 } from '../../../utils/helperFunctions';
 import VideoIcon from '../../../assets/svg/videoIcon';
 import ArticleIcon from '../../../assets/svg/articleIcon';
 import LinkIcon from '../../../assets/svg/linkIcon';
 import CompletedIcon from '../../../assets/svg/compeletedIcon';
-import { useCourseUseCases } from '../../../context/DependencyContext';
+import { useCourseDetail } from '../../hooks/useCourseDetail';
 
 type CourseDetailRouteProp = RouteProp<RootStackParamList, 'CourseDetail'>;
 const CourseDetailScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<CourseDetailRouteProp>();
-  const dispatch = useDispatch<AppDispatch>();
   const { courseSlug } = route.params;
-  const [courseProgress, setCourseProgress] = useState(0);
-  const courseUseCases = useCourseUseCases();
-
-  // Get data from Redux
-  const courseDetails = useSelector((state: RootState) => state.courses.courseDetails[courseSlug]);
-  const loadingDetails = useSelector((state: RootState) => state.courses.loadingDetails);
-  const lessonCompletions = useSelector((state: RootState) => state.courses.lessonCompletions);
-  const enrolledCourses = useSelector((state: RootState) => state.courses.enrolledCourses);
-  const isEnrolled = enrolledCourses.includes(courseSlug);
-
-  const error = useSelector((state: RootState) => state.courses.error);
-
-  //re fetching Data once user comes back from VideoPlayerScreen
-  useFocusEffect(
-    useCallback(() => {
-      if (courseDetails?.modules) {
-        const progress = calculateCourseProgress(courseSlug, courseDetails.modules);
-        setCourseProgress(progress);
-        //also save progress to mmkv, this will be used to show progress in course card
-        saveCourseProgress(courseSlug, progress);
-      }
-    }, [courseDetails?.modules, courseSlug]),
-  );
-
-  useEffect(() => {
-    // Only fetch if we don't have the details cached
-    if (!courseDetails) {
-      fetchCourseDetails();
-    }
-  }, [courseSlug]);
-
-  const fetchCourseDetails = async () => {
-    try {
-      dispatch(setLoadingDetails(true));
-      const response = await courseUseCases.getCourseDetails(courseSlug);
-      const details = response.course || response;
-
-      dispatch(
-        setCourseDetails({
-          slug: courseSlug,
-          details,
-        }),
-      );
-    } catch (err) {
-      dispatch(setError('Failed to load course details'));
-      console.error('Error fetching course details:', err);
-    }
-  };
+  const {
+    courseDetails,
+    loadingDetails,
+    error,
+    courseProgress,
+    lessonCompletions,
+    isEnrolled,
+    enrollInCourse,
+  } = useCourseDetail(courseSlug);
 
   // Transformed data for sectionList rendering
   const sectionsData = useMemo(() => {
@@ -136,26 +86,6 @@ const CourseDetailScreen = () => {
   const renderSectionHeader = ({ section }: { section: any }) => (
     <Text style={styles.moduleTitle}>{section.title}</Text>
   );
-
-  //function for enrolling in to a course
-  const handleEnroll = async () => {
-    if (isEnrolled) {
-      Alert.alert('Already Enrolled', 'You are already enrolled in this course');
-      return;
-    }
-
-    try {
-      // Update Redux state
-      dispatch(enrollInCourse(courseSlug));
-      // Persist to AsyncStorage
-      await courseUseCases.enrollInCourse(courseSlug);
-      // Show confirmation
-      Alert.alert('Enrolled!', `You have successfully enrolled in ${courseDetails?.title}`);
-    } catch (error) {
-      console.error('Error enrolling:', error);
-      Alert.alert('Error', 'Failed to enroll in course');
-    }
-  };
 
   // Get icon based on lesson type
   const getLessonIcon = (type: string) => {
@@ -237,7 +167,7 @@ const CourseDetailScreen = () => {
 
           <TouchableOpacity
             style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
-            onPress={handleEnroll}
+            onPress={enrollInCourse}
             disabled={isEnrolled}>
             <Text style={styles.enrollButtonText}>{isEnrolled ? '✓ Enrolled' : 'Enroll Now'}</Text>
           </TouchableOpacity>
@@ -250,7 +180,7 @@ const CourseDetailScreen = () => {
         </View>
       </View>
     );
-  }, [courseDetails, isEnrolled, courseProgress, handleEnroll]);
+  }, [courseDetails, isEnrolled, courseProgress, enrollInCourse]);
 
   const keyExtractor = useCallback(
     (item: any, index: number) => item.id?.toString() || `lesson-${index}`,
