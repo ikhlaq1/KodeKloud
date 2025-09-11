@@ -3,7 +3,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ build-test-branch ]
+    branches: [ develop ]
   pull_request:
     branches: [ main ]
 
@@ -14,16 +14,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # Changed from @latest
+        uses: actions/checkout@v4 
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4  # Changed from @latest
+        uses: actions/setup-node@v4 
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Setup JDK 17
-        uses: actions/setup-java@v4  # Changed from @latest
+        uses: actions/setup-java@v4 
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -46,7 +46,7 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4  # Changed from @latest
+        uses: actions/upload-artifact@v4 
         with:
           name: debug-apk-${{ github.run_number }}
           path: android/app/build/outputs/apk/debug/app-debug.apk
