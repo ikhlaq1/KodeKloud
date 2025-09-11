@@ -3,7 +3,6 @@ import { View, Alert, TouchableOpacity, Text } from 'react-native';
 import Video, { VideoRef } from 'react-native-video';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { VideoPlayerRouteProp } from '../../../navigation/types';
-import { MMKV } from 'react-native-mmkv';
 import styles from './styles';
 import {
   formatTime,
@@ -13,8 +12,7 @@ import {
 import { AppDispatch } from '../../../store/store';
 import { useDispatch } from 'react-redux';
 import { updateLessonCompletion } from '../../../store/courseSlice';
-
-const storage = new MMKV();
+import StorageService from '../../../services/StorageService';
 const VideoPlayerScreen = () => {
   const route = useRoute<VideoPlayerRouteProp>();
   const dispatch = useDispatch<AppDispatch>();
@@ -22,7 +20,6 @@ const VideoPlayerScreen = () => {
   const { lessonId, videoUrl, courseSlug } = route.params;
   const [duration, setDuration] = useState(0);
   const videoRef = useRef<VideoRef>(null);
-  //keys to track progress and completion of video
   const progressKey = `video_progress_${courseSlug}_${lessonId}`;
   const completedInPercentageKey = `lesson_completed_${courseSlug}_${lessonId}`;
   const lastSaveTimeRef = useRef<number>(0);
@@ -48,10 +45,10 @@ const VideoPlayerScreen = () => {
   };
 
   const saveProgress = (elapsedTime: number) => {
-    storage.set(progressKey, elapsedTime);
+    StorageService.saveVideoProgress(courseSlug, lessonId, elapsedTime);
     const currentPercentage = getCurrentPercentage(elapsedTime, duration);
     console.log('🚀 ~ saveProgressss ~ currentPercentage:', currentPercentage);
-    storage.set(completedInPercentageKey, currentPercentage);
+    StorageService.saveLessonCompletion(courseSlug, lessonId, currentPercentage);
     // added status in redux to avoid force or focus re renders on other screens
     dispatch(
       updateLessonCompletion({
@@ -66,7 +63,7 @@ const VideoPlayerScreen = () => {
   const onLoad = (data: any) => {
     setDuration(data.duration);
     // Seek to saved position
-    const savedPosition = storage.getNumber(progressKey);
+    const savedPosition = StorageService.getVideoProgress(courseSlug, lessonId);
     if (savedPosition && savedPosition > 0 && videoRef.current) {
       videoRef.current.seek(savedPosition);
       Alert.alert('Resuming', `Resuming from ${formatTime(savedPosition)} seconds`);

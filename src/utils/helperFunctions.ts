@@ -1,6 +1,5 @@
 import { Platform } from 'react-native';
-import { MMKV } from 'react-native-mmkv';
-const storage = new MMKV();
+import StorageService from '../services/StorageService';
 
 export const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
@@ -15,8 +14,7 @@ export const getCurrentPercentage = (elapsedTime: number, duration: number): num
 };
 
 export const getLessonCompletionPercentage = (courseSlug: string, lessonId: string): number => {
-  const completionKey = `lesson_completed_${courseSlug}_${lessonId}`;
-  return storage.getNumber(completionKey) || 0;
+  return StorageService.getLessonCompletion(courseSlug, lessonId);
 };
 
 export const calculateCourseProgress = (courseSlug: string, modules: any[]): number => {
@@ -29,9 +27,7 @@ export const calculateCourseProgress = (courseSlug: string, modules: any[]): num
     if (module.lessons) {
       module.lessons.forEach((lesson: any) => {
         totalLessons++;
-        const completionKey = `lesson_completed_${courseSlug}_${lesson.id}`;
-
-        if (storage.getBoolean(completionKey)) {
+        if (StorageService.isLessonCompleted(courseSlug, lesson.id)) {
           completedLessons++;
         }
       });
@@ -42,22 +38,17 @@ export const calculateCourseProgress = (courseSlug: string, modules: any[]): num
 };
 
 export const getLessonProgress = (courseSlug: string, lessonId: string): number => {
-  const progressKey = `video_progress_${courseSlug}_${lessonId}`;
-  return storage.getNumber(progressKey) || 0;
+  return StorageService.getVideoProgress(courseSlug, lessonId);
 };
 
 export const saveCourseProgress = (courseSlug: string, progress: number): void => {
-  const progressKey = `course_progress_${courseSlug}`;
-  storage.set(progressKey, progress);
+  StorageService.saveCourseProgress(courseSlug, progress);
 };
 
-// Get saved course progress from MMKV
 export const getCourseProgress = (courseSlug: string): number => {
-  const progressKey = `course_progress_${courseSlug}`;
-  return storage.getNumber(progressKey) || 0;
+  return StorageService.getCourseProgress(courseSlug);
 };
 
-//added this helper function because ios rejects image urls with http only
 export const getSecureImageUrl = (url: string): string => {
   if (!url) return '';
   if (Platform.OS === 'ios' && url.startsWith('http://')) {

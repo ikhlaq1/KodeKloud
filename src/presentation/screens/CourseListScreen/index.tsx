@@ -88,14 +88,6 @@ const CourseListScreen = () => {
     );
   }
 
-  if (error) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <FlatList
