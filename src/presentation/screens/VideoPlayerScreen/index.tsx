@@ -77,8 +77,11 @@ const VideoPlayerScreen = () => {
     <View style={styles.container}>
       <Video
         ref={videoRef}
+        //added default video url because on deeplinking the video url is not available
         source={{
-          uri: videoUrl,
+          uri:
+            videoUrl ||
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
         }}
         style={styles.video}
         onLoad={onLoad}
